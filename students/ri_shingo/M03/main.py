@@ -11,12 +11,14 @@ class Pixelman:
         self.bn_vy=Pixelman.FS
         self.bn_vy=0
         self.bn_ptn=1
+        self.bn_ptn2=0
         self.anime.pixelman = self
 
     def update(self, anime):
         if self.bn_ptn ==0:
             self.bn_y +=self.bn_vy
             self.bn_vy += Pixelman.GA
+            self.bn_x += self.bn_ptn2
             if self.bn_y > Anime.SCREEN_HIGHT:
                 self.bn_y =Anime.SCREEN_HIGHT - 16
                 self.bn_ptn =1
@@ -27,9 +29,11 @@ class Pixelman:
         else:
             if pyxel .btn(pyxel.KEY_RIGHT) == True :
                 self.bn_x += self.bn_vx
+                self.bn_ptn2 = 4
             elif pyxel.btn(pyxel.KEY_LEFT) == True :
-                  self.bn_x -= self.bn_vx
-
+                self.bn_x -= self.bn_vx
+                self.bn_ptn2 = -4
+                  
             # self.bn_x += self.bn_vx
             # if self.bn_x>Anime.SCREEN_HIGHT :
             #     self.bn_x = 0
@@ -39,10 +43,12 @@ class Pixelman:
         if pyxel.btnp(pyxel.KEY_SPACE) ==True :
             self.bn_ptn =0
         
-        if pyxel.btnp(pyxel.KEY_RETURN) :
+        if pyxel.btn(pyxel.KEY_RETURN) :
             Hanabi(self.anime,self.bn_x,self.bn_y)
-        elif self.bn_x < -16 :
-            self.bn_x = Anime.SCREEN_WIDTH - 16
+        self.anime.haikei.update(self.anime,self.bn_x,self.bn_y)
+
+        #elif self.bn_x < -16 :
+            #self.bn_x = Anime.SCREEN_WIDTH - 16
 
     def draw(self):
         if self.bn_ptn ==1:
@@ -51,6 +57,24 @@ class Pixelman:
             pyxel.blt(self.bn_x,self.bn_y,0,   16,0,16,16,0)
         else:
             pyxel.blt(self.bn_x,self.bn_y,0,  0,0, 16,16,0)
+
+class Haikei :
+    def __init__(self, anime):
+        self.anime = anime
+        self.anime.haikei = self
+        self.pos_start  = 0
+
+    def update(self, anime, x, y):
+        newx = int(x * 2)
+        self.pos_start = newx % 16
+
+    def draw(self) :
+        for i in range(-self.pos_start,Anime.SCREEN_WIDTH, 16) :
+            pyxel.blt( i , 0,
+                      1,
+                      0, 0,
+                      15, 191,
+                      0)
 
 class Anime:
     SCREEN_WIDTH =256
@@ -61,6 +85,7 @@ class Anime:
         pyxel.load("my_resource.pyxres")
         self.hanabis=[]
         Pixelman(self)
+        Haikei(self)
         pyxel.run(self.update,self.draw)
 
     def update(self):
@@ -72,6 +97,7 @@ class Anime:
 
     def draw(self):
         pyxel.cls(1)
+        self.haikei.draw()
         self.pixelman.draw()
         for hanabi in self.hanabis.copy() :
             hanabi.draw()

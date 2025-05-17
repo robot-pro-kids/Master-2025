@@ -12,6 +12,7 @@ class Pixelman:
         self.bn_vy = Pixelman.FS
         self.bn_ptn = 1
         self.anime.pixelman = self
+        self.action = 0
 
     def update(self,anime):
         if self.bn_ptn == 0:
@@ -27,8 +28,12 @@ class Pixelman:
 
             if pyxel.btn(pyxel.KEY_RIGHT):
                 self.bn_x += self.bn_vx
+                self.action = 1
             elif pyxel.btn(pyxel.KEY_LEFT):
-                self.bn_x -= self.bn_vy
+                self.bn_x -= self.bn_vx
+                self. action = -1
+            else:
+                self.action = 0
 
             if self.bn_x > Anime.SCREEN_WIDTH:
                 self.bn_x = 0
@@ -44,8 +49,11 @@ class Pixelman:
         if pyxel.btnp(pyxel.KEY_SPACE) == True:
             self.bn_ptn = 0
 
-        if pyxel.btnp(pyxel.KEY_RETURN):
+        if pyxel.btn(pyxel.KEY_RETURN):
             Hanabi(self.anime,self.bn_x,self.bn_y)
+
+        self.anime.haikei.update(self.anime,self.bn_x,self.bn_y)
+        self.anime.haikei2.update(self.anime,self.bn_x,self.bn_y)
             
     def draw(self):
         if self.bn_ptn == 1:
@@ -63,8 +71,19 @@ class Hanabi:
         self.hana_y = y
         self.hana_cnt = 0
         self.hana_tim = random.randint(0,150)
+        self.a = random.randint(0,16)
+        self.b = random.randint(0,16)
+        self.c = random.randint(0,16)
+        self.d = random.randint(0,8)
+        self.e = random.randint(8,15)
+        self.f = random.randint(15,23)
+        self.g = random.randint(23,30)
 
-    def update(self):
+    def update(self,s=0, a=0):
+        if a==1:
+            self.hana_x -= s
+        elif a==-1:
+            self.hana_x += s
         self.hana_cnt += 1
         if self.hana_cnt < self.hana_tim:
             self.hana_y -= 1
@@ -81,15 +100,47 @@ class Hanabi:
 
     def draw(self):
         if self.hana_ptn == 0:
-            pyxel.circ(self.hana_x,self.hana_y,2,8)
+            pyxel.circ(self.hana_x,self.hana_y,self.d,self.a)
         elif self.hana_ptn == 1:
-            pyxel.circb(self.hana_x,self.hana_y,4,15)
+            pyxel.circb(self.hana_x,self.hana_y,self.e,self.b)
         elif self.hana_ptn == 2:
-            pyxel.circb(self.hana_x,self.hana_y,4,15)
-            pyxel.circb(self.hana_x,self.hana_y,8,5)
+            pyxel.circb(self.hana_x,self.hana_y,self.e,self.b)
+            pyxel.circb(self.hana_x,self.hana_y,self.f,self.c)
         elif self.hana_ptn == 3:
-            pyxel.circb(self.hana_x,self.hana_y,8,5)
-            pyxel.circb(self.hana_x,self.hana_y,16,8)
+            pyxel.circb(self.hana_x,self.hana_y,self.f,self.c)
+            pyxel.circb(self.hana_x,self.hana_y,self.g,self.a)
+
+class Haikei:
+    def __init__(self,anime):
+        self.anime = anime
+        self.anime.haikei = self
+        self.pos_start = 0
+
+    def update(self,anime,x,y):
+        self.pos_start = x//8 % 32
+    def draw(self):
+        for i in range (-self.pos_start,Anime.SCREEN_WIDTH,32):
+            pyxel.blt( i , 0 ,
+                      1 ,
+                      0 , 0 ,
+                      31 , 175 ,
+                      0)
+
+class Haikei2:
+    def __init__(self,anime):
+        self.anime = anime
+        self.anime.haikei2 = self
+        self.pos_start = 0
+
+    def update(self,anime,x,y):
+        self.pos_start = x % 32
+    def draw(self):
+        for i in range (-self.pos_start,Anime.SCREEN_WIDTH,32):
+            pyxel.blt( i , 175 ,
+                      1 ,
+                      0 , 175 ,
+                      31 , 16 ,
+                      0)
 
 class Anime:
     SCREEN_WIDTH = 256
@@ -101,17 +152,20 @@ class Anime:
         self.sosuu = 100
         self.cnt = 1
         Pixelman(self)
+        Haikei(self)
+        Haikei2(self)
         pyxel.run(self.update,self.draw)
 
     def update(self):
         self.pixelman.update(Anime)
         for hanabi in self.hanabis.copy():
-            hanabi.update()
+            hanabi.update(self.pixelman.bn_vx,self.pixelman.action)
 
     def draw(self):
         pyxel.cls(1)
+        self.haikei.draw()
+        self.haikei2.draw()
         self.pixelman.draw()
         for hanabi in self.hanabis.copy():
             hanabi.draw()
-
 Anime()

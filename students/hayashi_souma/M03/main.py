@@ -1,4 +1,5 @@
 import pyxel
+import random
 
 class Pixelman:
     FS = -30  
@@ -36,6 +37,7 @@ class Pixelman:
 
         if pyxel.btnp(pyxel.KEY_W):
             Hanabi(self.anime,self.bn_x,self.bn_y)
+        self.anime.haikei.update(self.anime,self.bn_x,self.bn_y)
 
     def draw(self):
         if self.bn_ptn == 1:
@@ -53,6 +55,19 @@ class Hanabi :
         self.hana_y = y
         self.hana_cnt = 0
         self.hana_tim = 150
+        self.a = random.randint(0,16)
+        self.b = random.randint(0,16)
+        self.c = random.randint(0,16)
+        self.d = random.randint(0,16)
+        self.e = random.randint(0,16)
+        self.f = random.randint(0,16)
+
+        self.r_a = random.randint(0,16)
+        self.r_b = random.randint(16,20)
+        self.r_c = random.randint(20,25)
+        self.r_d = random.randint(25,30)
+        self.r_e = random.randint(30,35)
+
 
     def update(self):
         self.hana_cnt += 1
@@ -72,24 +87,43 @@ class Hanabi :
         else :
             if self.anime.hanabis :
                 self.anime.hanabis.remove(self)
+
+
     
     def draw(self):
         if self.hana_ptn == 0 :
-            pyxel.circ(self.hana_x,self.hana_y,2,8)
+            pyxel.circ(self.hana_x,self.hana_y,2,self.a)
         elif self.hana_ptn == 1 :
-            pyxel.circb(self.hana_x,self.hana_y,4,15)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_a,self.b)
         elif self.hana_ptn == 2 :
-            pyxel.circb(self.hana_x,self.hana_y,4,15)
-            pyxel.circb(self.hana_x,self.hana_y,8,5)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_a,self.b)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_b,self.c)
         elif self.hana_ptn == 3 :
-            pyxel.circb(self.hana_x,self.hana_y,8,5)
-            pyxel.circb(self.hana_x,self.hana_y,16,8)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_b,self.c)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_c,self.d)
         elif self.hana_ptn == 4 :
-            pyxel.circb(self.hana_x,self.hana_y,16,8)
-            pyxel.circb(self.hana_x,self.hana_y,32,12)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_c,self.d)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_d,self.e)
         elif self.hana_ptn == 5 :
-            pyxel.circb(self.hana_x,self.hana_y,32,12)
-            pyxel.circb(self.hana_x,self.hana_y,64,17)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_d,self.e)
+            pyxel.circb(self.hana_x,self.hana_y,self.r_e,self.f)
+
+class Haikei:
+    def __init__(self,anime):
+        self.anime = anime
+        self.anime.haikei = self
+        self.pos_start = 0
+
+    def update(self,anime,x,y):
+        self.pos_start = x % 16
+
+    def draw(self):
+        for i in range(-self.pos_start,Anime.SCREEN_WIDTH,16):
+            pyxel.blt(i, 0,
+                      1,
+                      0, 0,
+                     15, 191,
+                      0)
 
 class Anime:
     SCREEN_WIDTH = 256
@@ -99,6 +133,7 @@ class Anime:
         pyxel.load("my_resource.pyxres")
         self.hanabis=[]
         Pixelman(self)
+        Haikei(self)
         pyxel.run(self.update,self.draw)
 
     def update(self):
@@ -109,6 +144,7 @@ class Anime:
 
     def draw(self):
         pyxel.cls(1)
+        self.haikei.draw()
         self.pixelman.draw()
         for hanabi in self.hanabis.copy():
             hanabi.draw()
